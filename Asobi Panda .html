@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asobi Panda | 小さなゲーム、大きな笑顔</title>
+
+<link rel="apple-touch-icon" sizes="180x180" href="Apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="panda.png">
+<link rel="icon" type="image/png" sizes="16x16" href="panda.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #ff7675; /* Sakura Pink */
+        --secondary: #2d3436; /* Ink Black */
+        --accent: #55efc4; /* Mint Green */
+        --bg: #fff0f5;     /* Lavender Blush */
+        --card-bg: #ffffff;
+        --shadow: 0 10px 25px rgba(255, 118, 117, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Zen Maru Gothic', sans-serif; }
+
+    body {
+        background-color: var(--bg);
+        color: var(--secondary);
+        overflow-x: hidden;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- ENHANCED SAKURA ANIMATION --- */
+    #sakura-canvas {
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+    
+    /* --- HERO HEADER --- */
+    header {
+        text-align: center;
+        padding: 80px 20px 40px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .mascot { font-size: 4rem; display: block; animation: bounce 2s infinite; }
+    
+    h1 {
+        font-size: 3.5rem;
+        color: var(--secondary);
+        margin: 10px 0;
+        text-shadow: 2px 2px 0px white;
+    }
+
+    .tagline {
+        background: white;
+        color: var(--primary);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        display: inline-block;
+        box-shadow: var(--shadow);
+        font-size: 1.1rem;
+    }
+
+    /* --- GAMES GRID --- */
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        flex: 1;
+        position: relative;
+        z-index: 2;
+    }
+
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .game-card {
+        background: white;
+        border-radius: 25px;
+        padding: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 3px solid transparent;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .game-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        border-color: var(--primary);
+        box-shadow: var(--shadow);
+    }
+
+    /* Japanese Style Logos */
+    .logo-box {
+        width: 80px; height: 80px; margin: 0 auto 15px;
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem; color: white;
+        position: relative;
+    }
+    
+    .ww-logo { background: #ff9f43; } /* Word War */
+    .snake-logo { background: #2ed573; } /* Snake */
+    .kira-logo { background: #5f27cd; } /* Kira */
+
+    h3 { font-size: 1.4rem; margin-bottom: 5px; color: var(--secondary); }
+    p.desc { font-size: 0.9rem; color: #888; margin-bottom: 15px; }
+
+    .play-badge {
+        background: var(--primary); color: white;
+        padding: 5px 15px; border-radius: 15px;
+        font-size: 0.8rem; opacity: 0; transform: translateY(10px);
+        transition: 0.3s; display: inline-block;
+    }
+    .game-card:hover .play-badge { opacity: 1; transform: translateY(0); }
+
+    /* --- GAME OVERLAY (IFRAME CONTAINER) --- */
+    #game-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 240, 245, 0.95);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        flex-direction: column;
+        animation: fadeIn 0.3s;
+    }
+
+    .overlay-header {
+        padding: 15px; display: flex; justify-content: space-between; align-items: center;
+        background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .back-btn {
+        background: var(--primary); color: white; border: none;
+        padding: 8px 20px; border-radius: 20px; cursor: pointer;
+        font-weight: bold; font-size: 1rem;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .back-btn:hover { background: #ff5252; }
+
+    #game-frame {
+        flex: 1; border: none; width: 100%; max-width: 600px;
+        margin: 0 auto; background: transparent;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+        background: white;
+        padding: 60px 20px 20px;
+        margin-top: 50px;
+        border-radius: 30px 30px 0 0;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+        position: relative; z-index: 2;
+    }
+
+    .footer-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px; max-width: 1000px; margin: 0 auto;
+    }
+
+    .col h4 { color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+    .col ul { list-style: none; }
+    .col li { margin-bottom: 10px; font-size: 0.9rem; color: #666; cursor: pointer; transition: 0.2s; }
+    .col li:hover { color: var(--primary); padding-left: 5px; }
+
+    .copyright { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ddd; font-size: 0.8rem; color: #999; }
+
+    /* --- MODALS (INFO) --- */
+    dialog {
+        border: none; border-radius: 20px; padding: 30px;
+        width: 90%; max-width: 500px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    dialog::backdrop { background: rgba(0,0,0,0.4); }
+    .modal-head { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .modal-head h2 { color: var(--primary); }
+    .close-modal { background: #eee; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+    <canvas id="sakura-canvas"></canvas>
+
+    <header>
+        <span class="mascot">🐼</span>
+        <h1>Asobi Panda</h1>
+        <div class="tagline">小さなゲーム、大きな笑顔 💮</div>
+    </header>
+
+    <div class="container">
+        <div class="games-grid">
+            
+            <div class="game-card" onclick="openGame('WordWar')">
+                <div class="logo-box ww-logo">W</div>
+                <h3>Word War</h3>
+                <p class="desc">言葉の戦争</p>
+                <div class="play-badge">PLAY NOW</div>
+            </div>
+
+             <div class="game-card" onclick="openGame('SnakeBite')">
+                <div class="logo-box snake-logo">🐍</div>
+                <h3>Snake Bite</h3>
+                <p class="desc">ネオンエディション</p>
+                <div class="play-badge">PLAY NOW</div>
+            </div>          
+
+            <div class="game-card" onclick="openGame('Kira')">
+                <div class="logo-box kira-logo">XO</div>
+                <h3>Kira</h3>
+                <p class="desc">戦略AI</p>
+                <div class="play-badge">PLAY NOW</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-overlay">
+        <div class="overlay-header">
+            <button class="back-btn" onclick="closeGame()">❮ Back to Home</button>
+            <h3 id="current-game-title">Game Title</h3>
+            <div style="width: 80px;"></div>
+        </div>
+        <iframe id="game-frame"></iframe>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="col">
+                <h4>🐼 About Asobi Panda</h4>
+                <ul>
+                    <li onclick="showModal('info-panda')">Our Philosophy</li>
+                    <li onclick="showModal('info-mission-vision')">Mission & Vision</li>
+                </ul>
+            </div>
+            <div class="col">
+                <h4>🏢 Kimi Technologies</h4>
+                <ul>
+                    <li onclick="showModal('info-company')">Company Profile</li>
+                    <li onclick="showModal('info-services')">Services</li>
+                    <li onclick="showModal('info-parent')">DVNKC Inc.</li>
+                </ul>
+            </div>
+            <div class="col">
+                <h4>⚖️ Legal</h4>
+                <ul>
+                    <li onclick="showModal('info-privacy')">Privacy Policy</li>
+                    <li onclick="showModal('info-terms')">Terms & Conditions</li>
+                </ul>
+            </div>
+            <div class="col">
+                <h4>🎮 Games Bag</h4>
+                <ul>
+                    <li onclick="openGame('WordWar')">Word War</li>
+                    <li onclick="openGame('SnakeBite')">Snake Bite</li>
+                    <li onclick="openGame('Kira')">Kira</li>
+                 </ul>
+             </div>
+         </div>
+         <div class="copyright">
+            © 2023–2026 Asobi Panda. Made with ❤️ in Japan. A Product of Kimi Technologies, DVNKC Inc. All Rights Reserved.
+        </div>
+    </footer>
+
+    <dialog id="info-panda">
+        <div class="modal-head"><h2>About Asobi Panda</h2><button class="close-modal" onclick="this.closest('dialog').close()">✕</button></div>
+        <p><strong>Tagline:</strong> 小さなゲーム、大きな笑顔 (Small Games, Big Smiles)</p>
+        <p>Asobi Panda brings the charm of Japanese minimalism to browser gaming. No installs, no ads, just instant fun.</p>
+    </dialog>
+    
+    <dialog id="info-mission-vision">
+        <div class="modal-head"><h2>Mission & Vision</h2><button class="close-modal" onclick="this.closest('dialog').close()">✕</button></div>
+        <p><strong>Tagline:</strong> 小さなゲーム、大きな笑顔 (Small Games, Big Smiles)</p>
+        <p>Our mission is to <strong>redefine the "micro-gaming" experience</strong>. We strive to create a digital sanctuary where users can escape into high-quality, lightweight games that respect their time and spark immediate joy.</p>
+        <p>To become the global benchmark for <strong>minimalist web entertainment</strong>. We envision a world where technology feels like art, and every "click" brings a moment of zen and a wide smile to players across the globe.</p>
+    </dialog>
+
+    <dialog id="info-company">
+        <div class="modal-head">
+            <h2>Company Profile</h2>
+            <button class="close-modal" onclick="this.closest('dialog').close()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Kimi Technologies</strong> is a premier multidisciplinary technology firm committed to driving innovation and digital excellence. We specialize in designing and developing high-end digital products and strategic tech solutions tailored for our clientele.</p>
+        </div>
+    </dialog>
+  
+    <dialog id="info-services">
+        <div class="modal-head">
+            <h2>Our Services</h2>
+            <button class="close-modal" onclick="this.closest('dialog').close()">✕</button>
+        </div>
+        <div class="modal-body">
+            <ul style="margin-left:20px; font-size:0.9rem; line-height:1.6;">
+                <li>Creative Writing & Narrative Design</li>
+                <li>Graphic Designing & UI/UX (Prototyping)</li>
+                <li>Frontend Development (Web & Mobile)</li>
+                <li>Password Architecture & Cyber Security</li>
+                <li>IT Support & Infrastructure</li>
+                <li>Digital Marketing & SEO Strategy</li>
+                <li>Custom Software Development</li>
+            </ul>
+        </div>
+    </dialog> 
+  
+    <dialog id="info-parent">
+        <div class="modal-head">
+            <h2>DVNKC Inc.</h2>
+            <button class="close-modal" onclick="this.closest('dialog').close()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p><strong>DVNKC Inc.</strong> is the official <strong>Parent Company</strong> of Kimi Technologies. It leads our global operations and provides the strategic framework under which Kimi Technologies operates.</p>
+        </div>
+    </dialog> 
+
+    <dialog id="info-privacy">
+        <div class="modal-head"><h2>Privacy Policy</h2><button class="close-modal" onclick="this.closest('dialog').close()">✕</button></div>
+        <p><strong>No Sign Up Required:</strong> Play instantly.</p>
+        <p><strong>Data:</strong> All game progress (scores, streaks) is stored locally on your device. We do not collect personal data.</p>
+    </dialog>
+
+    <dialog id="info-terms">
+        <div class="modal-head"><h2>Terms & Conditions</h2><button class="close-modal" onclick="this.closest('dialog').close()">✕</button></div>
+        <p>Free for personal use. All code and assets are property of Kimi Technologies. Redistribution without permission is prohibited.</p>
+    </dialog>
+
+<script>
+    // --- SAKURA ANIMATION ENGINE ---
+    const canvas = document.getElementById('sakura-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const petals = [];
+    class Petal {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height - canvas.height;
+            this.size = Math.random() * 10 + 5;
+            this.speed = Math.random() * 1 + 0.5;
+            this.angle = Math.random() * 360;
+            this.spin = Math.random() * 2 - 1;
+        }
+        update() {
+            this.y += this.speed;
+            this.x += Math.sin(this.angle * Math.PI / 180) * 0.5;
+            this.angle += this.spin;
+            if (this.y > canvas.height) this.y = -20;
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle * Math.PI / 180);
+            ctx.fillStyle = '#ff7675';
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    for (let i = 0; i < 50; i++) petals.push(new Petal());
+
+    function animateSakura() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        petals.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateSakura);
+    }
+    animateSakura();
+
+    // --- GAME LAUNCHER SYSTEM ---
+    const games = {
+        'WordWar': `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Word War Pro</title><style>:root { --bg: #121213; --board-bg: #121213; --cell-border: #3a3a3c; --cell-text: #ffffff; --key-bg: #818384; --green: #6aaa64; --yellow: #c9b458; --grey: #3a3a3c; --footer-bg: #1e1e1f; } body.light { --bg: #ffffff; --board-bg: #ffffff; --cell-border: #d3d6da; --cell-text: #000000; --key-bg: #d3d6da; --green: #6aaa64; --yellow: #c9b458; --grey: #787c7e; --footer-bg: #f8f9fa; } * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; } body { background: var(--bg); color: var(--cell-text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; transition: background 0.3s ease; } header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--cell-border); max-width: 600px; } h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; } .icon-btn { background: none; border: none; color: var(--cell-text); font-size: 1.4rem; cursor: pointer; padding: 5px; } #game-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; padding: 20px; width: 100%; } #board { display: grid; grid-template-rows: repeat(6, 1fr); gap: 5px; } .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; } .cell { width: 55px; height: 55px; border: 2px solid var(--cell-border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; text-transform: uppercase; transition: transform 0.1s; } .cell.pop { transform: scale(1.1); border-color: var(--key-bg); } .cell.correct { background: var(--green); border-color: var(--green); color: white; } .cell.present { background: var(--yellow); border-color: var(--yellow); color: white; } .cell.absent { background: var(--grey); border-color: var(--grey); color: white; } #keyboard { width: 100%; max-width: 500px; padding: 10px; } .keyboard-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; } .key { background: var(--key-bg); color: white; border: none; border-radius: 4px; padding: 15px 5px; font-weight: bold; cursor: pointer; flex: 1; } .key.large { flex: 1.5; font-size: 0.7rem; } footer { background: var(--footer-bg); border-top: 1px solid var(--cell-border); width: 100%; padding: 40px 20px; margin-top: 40px; } .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 800px; margin: 0 auto; } footer h3 { font-size: 0.9rem; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; color: var(--green); } footer p, footer li { font-size: 0.85rem; line-height: 1.6; opacity: 0.8; list-style: none; } .copyright { text-align: center; margin-top: 40px; font-size: 0.75rem; opacity: 0.5; border-top: 1px solid var(--cell-border); padding-top: 20px; }</style></head><body><header><h1>WORD WAR</h1><div class="controls"><button class="icon-btn" onclick="toggleTheme()">🌓</button><button class="icon-btn" onclick="restart()">🔄</button></div></header><div id="game-container"><div id="board"></div><div id="keyboard"></div><div class="stats" style="margin-top:20px; opacity:0.8; font-size:0.9rem;">Streak: <span id="streak">0</span> | Best: <span id="highStreak">0</span></div></div><script>const dictionary=["APPLE","ABOUT","ABOVE","ABUSE","ACTOR","ADMIT","ADULT","ADORE","BEACH","BRAIN","BREAD","BRUSH","CHAIR","CHEST","CHORD","CLICK","CLOCK","CLOUD","DANCE","DIARY","DRINK","DRIVE","EARTH","FEAST","FIELD","FRUIT","GLASS","GRAPE","GREEN","GHOST","HEART","HOUSE","JUICE","LIGHT","LEMON","MELON","MONEY","MUSIC","NIGHT","OCEAN","PARTY","PIANO","PILOT","PLANE","PHONE","PIZZA","PLANT","RADIO","RIVER","ROBOT","SHIRT","SHOES","SMILE","SNAKE","SPACE","SPOON","STORM","TABLE","TIGER","TOAST","TOUCH","TRAIN","TRUCK","VOICE","WATER","WATCH","WHALE","WORLD","WRITE","YACHT","ZEBRA"];let secretWord="";let guesses=[];let currentGuess="";const maxAttempts=6;let streak=parseInt(localStorage.getItem("wwStreak"))||0;let highStreak=parseInt(localStorage.getItem("wwHigh"))||0;function init(){secretWord=dictionary[Math.floor(Math.random()*dictionary.length)].toUpperCase();guesses=[];currentGuess="";renderBoard();renderKeyboard();updateStats()}function renderBoard(){const board=document.getElementById("board");board.innerHTML="";for(let i=0;i<maxAttempts;i++){const row=document.createElement("div");row.className="row";const guess=guesses[i]||"";for(let j=0;j<5;j++){const cell=document.createElement("div");cell.className="cell";if(i===guesses.length&&j<currentGuess.length){cell.textContent=currentGuess[j];cell.classList.add("pop")}else if(guess){cell.textContent=guess[j];const status=checkLetter(guess,j);cell.classList.add(status)}row.appendChild(cell)}board.appendChild(row)}}function checkLetter(guess,index){if(guess[index]===secretWord[index])return"correct";if(secretWord.includes(guess[index]))return"present";return"absent"}function renderKeyboard(){const keys=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["ENTER","Z","X","C","V","B","N","M","DEL"]];const container=document.getElementById("keyboard");container.innerHTML="";keys.forEach(row=>{const rowDiv=document.createElement("div");rowDiv.className="keyboard-row";row.forEach(key=>{const btn=document.createElement("button");btn.className="key";btn.textContent=key;if(key==="ENTER"||key==="DEL")btn.classList.add("large");btn.onclick=()=>handleInput(key);rowDiv.appendChild(btn)});container.appendChild(rowDiv)})}function handleInput(key){if(key==="ENTER"){if(currentGuess.length===5){guesses.push(currentGuess);if(currentGuess===secretWord){streak++;if(streak>highStreak)highStreak=streak;saveStats();setTimeout(()=>{alert("VICTORY! 🏆");init()},200)}else if(guesses.length===maxAttempts){streak=0;saveStats();setTimeout(()=>{alert("The word was: "+secretWord);init()},200)}currentGuess=""}}else if(key==="DEL"||key==="Backspace"){currentGuess=currentGuess.slice(0,-1)}else if(/^[A-Z]$/.test(key.toUpperCase())&&currentGuess.length<5){currentGuess+=key.toUpperCase()}renderBoard();renderKeyboard()}function saveStats(){localStorage.setItem("wwStreak",streak);localStorage.setItem("wwHigh",highStreak);updateStats()}function updateStats(){document.getElementById("streak").textContent=streak;document.getElementById("highStreak").textContent=highStreak}function toggleTheme(){document.body.classList.toggle("light")}function restart(){if(confirm("New Game?"))init()}window.addEventListener("keydown",(e)=>handleInput(e.key==="Enter"?"ENTER":e.key==="Backspace"?"DEL":e.key.toUpperCase()));init()<\/script></body></html>`,
+        'SnakeBite': `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Snake Bite - Neon Edition</title><style>:root { --bg: #0b1120; --card: #1e293b; --text: #ffffff; --snake-head: #00ff88; --snake-body: #00cc6a; --food: #ff0055; --grid: #334155; --shadow: rgba(0, 255, 136, 0.4); } body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; max-width: 600px; border-bottom: 1px solid var(--grid); } h1 { font-size: 1.8rem; color: var(--snake-head); font-style: italic; } .game-wrapper { position: relative; margin-top: 20px; padding: 10px; border-radius: 15px; background: var(--card); touch-action: none; } canvas { background: var(--bg); border-radius: 10px; display: block; border: 1px solid var(--grid); } .scoreboard { display: flex; justify-content: space-between; width: 100%; max-width: 320px; margin-top: 15px; font-weight: bold; } .score-box { background: var(--card); padding: 8px 20px; border-radius: 20px; } .d-pad { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; margin-top: 20px; touch-action: none; } .pad-btn { width: 65px; height: 65px; background: var(--card); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; }</style></head><body><header><h1>SNAKE BITE</h1></header><div class="scoreboard"><div class="score-box">Score: <span id="score" class="score-val">0</span></div><div class="score-box">Best: <span id="highScore" class="score-val">0</span></div></div><div class="game-wrapper"><canvas id="gameCanvas" width="300" height="300"></canvas></div><div class="d-pad"><div></div><div class="pad-btn" onclick="handleInput('up')">▲</div><div></div><div class="pad-btn" onclick="handleInput('left')">◀</div><div class="pad-btn" onclick="handleInput('down')">▼</div><div class="pad-btn" onclick="handleInput('right')">▶</div></div><script>const canvas=document.getElementById("gameCanvas");const ctx=canvas.getContext("2d");const gridSize=15;const tileCount=canvas.width/gridSize;let score=0;let highScore=localStorage.getItem("snakeBiteHigh")||0;let snake=[];let food={x:5,y:5};let velocity={x:0,y:0};let gameInterval;function init(){snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];food={x:5,y:5};velocity={x:1,y:0};score=0;updateScore();if(gameInterval)clearInterval(gameInterval);gameInterval=setInterval(gameLoop,140)}function gameLoop(){update();draw()}function update(){const head={x:snake[0].x+velocity.x,y:snake[0].y+velocity.y};if(head.x<0||head.x>=tileCount||head.y<0||head.y>=tileCount){gameOver();return}if(snake.some(s=>s.x===head.x&&s.y===head.y)){gameOver();return}snake.unshift(head);if(head.x===food.x&&head.y===food.y){score+=10;updateScore();spawnFood()}else{snake.pop()}}function spawnFood(){food={x:Math.floor(Math.random()*tileCount),y:Math.floor(Math.random()*tileCount)}}function draw(){ctx.fillStyle="#0b1120";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#ff0055";ctx.shadowBlur=10;ctx.shadowColor="#ff0055";ctx.beginPath();ctx.arc(food.x*gridSize+gridSize/2,food.y*gridSize+gridSize/2,gridSize/2-2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;snake.forEach((s,i)=>{ctx.fillStyle=i===0?"#00ff88":"#00cc6a";if(i===0){ctx.shadowBlur=10;ctx.shadowColor="#00ff88"}else{ctx.shadowBlur=0}ctx.fillRect(s.x*gridSize,s.y*gridSize,gridSize-2,gridSize-2);if(i===0){ctx.fillStyle="#000";let ex1,ey1,ex2,ey2;if(velocity.x===1){ex1=s.x*gridSize+10;ey1=s.y*gridSize+4;ex2=s.x*gridSize+10;ey2=s.y*gridSize+10}else if(velocity.x===-1){ex1=s.x*gridSize+4;ey1=s.y*gridSize+4;ex2=s.x*gridSize+4;ey2=s.y*gridSize+10}else if(velocity.y===1){ex1=s.x*gridSize+4;ey1=s.y*gridSize+10;ex2=s.x*gridSize+10;ey2=s.y*gridSize+10}else{ex1=s.x*gridSize+4;ey1=s.y*gridSize+4;ex2=s.x*gridSize+10;ey2=s.y*gridSize+4}ctx.fillRect(ex1,ey1,2,2);ctx.fillRect(ex2,ey2,2,2)}})}function handleInput(dir){if(dir==='up'&&velocity.y===0)velocity={x:0,y:-1};if(dir==='down'&&velocity.y===0)velocity={x:0,y:1};if(dir==='left'&&velocity.x===0)velocity={x:-1,y:0};if(dir==='right'&&velocity.x===0)velocity={x:1,y:0}}function updateScore(){document.getElementById("score").textContent=score;document.getElementById("highScore").textContent=highScore}function gameOver(){clearInterval(gameInterval);if(score>highScore){highScore=score;localStorage.setItem("snakeBiteHigh",highScore)}alert("Bite Over! Score: "+score);init()}init()<\/script></body></html>`,
+        'Kira': `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kira - Strategic AI</title><style>:root { --bg: #0f172a; --card: #1e293b; --text: #ffffff; --accent: #ff2e63; --player-x: #00f2ff; --player-o: #ff2e63; --cell-hover: #334155; } body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: sans-serif; } .board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 12px; margin-top: 20px; } .cell { width: 100px; height: 100px; background: var(--card); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; transition: 0.3s; } .cell:hover { background: var(--cell-hover); } .cell.x-mark { color: var(--player-x); } .cell.o-mark { color: var(--player-o); } .status-box { margin-top: 20px; font-size: 1.5rem; } .score-board { display: flex; gap: 30px; margin-top: 20px; font-weight: bold; } .controls { margin-top: 20px; display: flex; gap: 10px; }</style></head><body><h1 style="margin-top:20px; color:var(--accent);">KIRA AI</h1><div class="score-board"><div>X: <span id="xScore">0</span></div><div>O: <span id="oScore">0</span></div></div><div class="status-box" id="status">X Turn</div><div class="board" id="board"></div><div class="controls"><button id="modeBtn" onclick="toggleMode()" style="padding:10px 20px; cursor:pointer; background:var(--card); border:1px solid var(--accent); color:white; border-radius:10px;">Mode: VS AI</button><button onclick="reset()" style="padding:10px 20px; cursor:pointer; background:var(--accent); border:none; color:white; border-radius:10px;">Reset</button></div><script>let board=["","","","","","","","",""];let curr="X";let game=true;let vsAI=true;let scores={X:0,O:0};function init(){const b=document.getElementById("board");b.innerHTML="";board.forEach((v,i)=>{const c=document.createElement("div");c.className="cell";if(v==="X")c.classList.add("x-mark");if(v==="O")c.classList.add("o-mark");c.innerText=v;c.onclick=()=>move(i);b.appendChild(c)})}function move(i){if(!game||board[i]!=="")return;board[i]=curr;init();if(checkWin()){document.getElementById("status").innerText=curr+" WINS!";scores[curr]++;updateScores();game=false;return}if(!board.includes("")){document.getElementById("status").innerText="DRAW!";game=false;return}curr=curr==="X"?"O":"X";document.getElementById("status").innerText=curr+" Turn";if(vsAI&&curr==="O")setTimeout(ai,500)}function ai(){if(!game)return;let empty=board.map((v,i)=>v===""?i:null).filter(v=>v!=null);let r=empty[Math.floor(Math.random()*empty.length)];move(r)}function checkWin(){const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return wins.some(c=>board[c[0]]&&board[c[0]]==board[c[1]]&&board[c[0]]==board[c[2]])}function updateScores(){document.getElementById("xScore").innerText=scores.X;document.getElementById("oScore").innerText=scores.O}function toggleMode(){vsAI=!vsAI;document.getElementById("modeBtn").innerText=vsAI?"Mode: VS AI":"Mode: VS Player";reset()}function reset(){board=["","","","","","","","",""];curr="X";game=true;document.getElementById("status").innerText="X Turn";init()}init()<\/script></body></html>`
+    };
+
+    function openGame(gameName) {
+        document.getElementById('game-overlay').style.display = 'flex';
+        document.getElementById('current-game-title').innerText = gameName;
+        const iframe = document.getElementById('game-frame');
+        
+        // Inject the game code directly into the iframe
+        const gameCode = games[gameName];
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(gameCode);
+        iframe.contentWindow.document.close();
+    }
+
+    function closeGame() {
+        document.getElementById('game-overlay').style.display = 'none';
+        const iframe = document.getElementById('game-frame');
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write("");
+        iframe.contentWindow.document.close();
+    }
+
+    function showModal(id) {
+        document.getElementById(id).showModal();
+    }
+</script>
+</body>
+</html>
